@@ -25,17 +25,21 @@
 </head>
 <body>
  <p class="labelstyle" id="title">吉他第一把位识谱练习</p>
- <div class="timer">练习时长: 00:00:00</div>
- <div class="counter">练习个数: 0</div>
+ <div class="timer">单次时长: 00:00:00</div>
+ <div class="counter">练习总数: 0</div>
  <div class="clock">打卡时间: </div>
+ <label for="randSelect">练习范围：</label>
+ <select id="randSelect">
+	<option value=0 selected>全部</option>
+	<option value=1>空弦</option>
+	<option value=2>低音</option>
+	<option value=3>中音</option>
+	<option value=4>高音</option>
+</select>
  <label for="input1">间隔时间（s）：</label>
- <input type="text" value="1" id="input1">
+ <input type="text" value="2" id="input1">
  <label for="input2">作答时间（s）：</label>
  <input type="text" value="3" id="input2">
- <!-- <button id="button1" onclick="function() { startTimer(); start(); }">开始</button>
- <button id="button2" onclick="function() { stopTimer(); end(); }">结束</button> -->
- <!-- <button id="button1" onclick="startTimer()">开始</button>
- <button id="butt --><!-- on2" onclick="stopTimer()">结束</button> -->
  <button id="button1" onclick="start()">开始</button>
  <button id="button2" onclick="end()">结束</button>
  <p id="output"> </p>
@@ -50,12 +54,38 @@
  var timeoutId=null;
  var r;
  var count = 0; // 绘制计数器
+ var anscount=0;
 
 var timerElement = document.querySelector('.timer');
 var counterElement = document.querySelector('.counter');
 var clockElement = document.querySelector('.clock');
+var randSelect = document.getElementById("randSelect");
 var seconds = 0;
 var intervalId=null;
+
+var notes = ['_3', '_4', '_5', '_6', '_7'
+ 			, '1', '2', '3', '4', '5', '6', '7'
+ 			, '1^', '2^', '3^', '4^', '5^'];
+var pickpos = ['6-0', '6-1', '6-3', '5-0', '5-2'
+ 			, '5-3', '4-0', '4-2', '4-3', '3-0', '3-2', '2-0'
+ 			, '2-1', '2-3', '1-0', '1-1', '1-3']
+var randlist = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+
+function setrand() {
+	// alert('select'+randSelect.value);
+	if(randSelect.value==0){
+		randlist=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+	}else if(randSelect.value==1){
+		randlist=[0, 3, 6, 9, 11, 14];
+	}else if(randSelect.value==2){
+		randlist=[0, 1, 2, 3, 4, 5, 6];
+	}else if(randSelect.value==3){
+		randlist=[7, 8, 9, 10, 11];
+	}else if(randSelect.value==4){
+		randlist=[12, 13, 14, 15, 16];
+	}
+}
+randSelect.addEventListener("change", setrand);
 
 function startTimer() {
 	// alert("startTimer");
@@ -93,7 +123,7 @@ function updateTimer() {
 	var minutes = Math.floor((seconds % 3600) / 60);
 	var remainingSeconds = seconds % 60;
 
-	var formattedTime = '练习时长: '+ padZero(hours) + ':' + padZero(minutes) + ':' + padZero(remainingSeconds);
+	var formattedTime = '单次时长: '+ padZero(hours) + ':' + padZero(minutes) + ':' + padZero(remainingSeconds);
 	timerElement.textContent = formattedTime;
 
 	seconds++;
@@ -103,12 +133,6 @@ function padZero(num) {
 	return num.toString().padStart(2, '0');
 }
 
- notes = ['_3', '_4', '_5', '_6', '_7'
- 			, '1', '2', '3', '4', '5', '6', '7'
- 			, '1^', '2^', '3^', '4^', '5^'];
- pickpos = ['6-0', '6-1', '6-3', '5-0', '5-2'
- 			, '5-3', '4-0', '4-2', '4-3', '3-0', '3-2', '2-0'
- 			, '2-1', '2-3', '1-0', '1-1', '1-3']
  // 绘制格子: margin左上角的坐标, width是小矩形的大小
  function drawGrid(n_row, n_col, margin=[30, 40], width=[150, 50], skip_vertical=false) {
  	ctx.beginPath();
@@ -151,9 +175,18 @@ function padZero(num) {
  	waittime = parseInt(document.getElementById("input2").value);
  }
 
+ function genrand() {
+ 	while(true){
+ 		r=Math.floor(Math.random() * notes.length);
+ 		if(randlist.includes(r)){
+ 			break;
+ 		}
+ 	}
+ }
+
  function question() {
 	// 随机音符
-	r=Math.floor(Math.random() * notes.length);
+	genrand();
 	// alert("question"+r);
 	// 清屏
 	ctx.clearRect(0, 0, 600, 600);
@@ -181,14 +214,15 @@ function padZero(num) {
 		x+=margin;
 	}
 	drawCircle(x, y, 0.4*margin);
-	counterElement.textContent = '练习个数: '+(count+1)/2;
+	anscount++;
+	counterElement.textContent = '练习总数: '+anscount;
  }
 
  function start(){
  	end();
  	startTimer();
  	// comment掉，好做总计数，中途还可以暂停下
- 	// count=0; 
+ 	count=0; 
  	// 读入时间参数
  	getTime();
  	// alert("start");
